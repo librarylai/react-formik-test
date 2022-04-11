@@ -52,7 +52,7 @@ const SignupForm = () => {
 
 >  1. handleSubmit: A submission handler 
 > 觸發 submit 事件，也就是上面 useFormik 的 onSubmit function
->  2. handleChange: A change handler to pass to each <input>, <select>, or <textarea>
+>  2. handleChange: A change handler to pass to each `<input>, <select>, or <textarea>`
 >  會自動將輸入的 value 寫到 form 表單中對應的 id or name
 > 3. values: Our form’s current values
 > 表單的 values    
