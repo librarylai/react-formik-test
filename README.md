@@ -1,6 +1,9 @@
 # 【筆記】React Formik 表單套件
 ###### tags: `筆記文章`
 
+![](https://i.imgur.com/vnuXUgq.png)
+
+
 表單是前端開發上一定會碰到的東西，且往往是要寫不少`onChange` 事件與驗證等功能，而 『Formik』 就是一套方便我們來解決表單輸入的套件，它提供了一系列的 React Component 與 hooks 來讓我們能快速的建立表單功能。
 
 使用 Formik 的優點：
@@ -218,3 +221,118 @@ ex.`<input name='email' onBlur={formik.handleBlur}/>`
 ![](https://i.imgur.com/JoyfOHE.gif)
 
 從上面的測試影片中可以發現，當輸入框 onBlur 後將該欄位的`name`當作 key 寫到 `formik.touched` 物件中，紀錄著該欄位已被訪問過了。
+
+## getFieldProps()
+以往我們在使用 `useFormik` 時，每次都需要對每個 inputs 填上 formik.handleChange、formik.values、formik.handleBlur...等內容，這不僅讓程式碼變得很冗長也會浪費不少時間在一直寫重複的 code。
+
+因此 `useFormik` 提供了一個 helper function 來幫我們快速的產生這些內容，它就是 `formik.getFieldProps()`，只需要傳入該欄位的 name 名稱到 `getFieldProps` 中，它就會幫我們產生 `onChange`、`onBlur`、`name`、`value` 這幾個屬性的物件，讓整個程式碼變得只需要寫一行就好。
+
+![](https://i.imgur.com/s8W6x7Y.png)
+
+```jsx=
+/* 以往寫法 */
+<input
+    id='email'
+    name='email'
+    onChange={formik.handleChange}
+    value={formik.values.email}
+/>
+/* 使用 getFieldProps */
+<input
+    id='email'
+    {...formik.getFieldProps('email')}
+/>
+```
+
+## Formik 套件的 Components 連技
+上面的介紹基本上都是圍繞在使用 useFormik 為主軸，我們可以透過 getFieldProps 來減少程式碼的攥寫，整個表單在使用 useFormik 的情況下，大概只剩下需要寫 handleSubmit、getFieldProps 與 error 這三個部分而已。
+
+#### 但...身為工程師懶還要更懶才行！！！
+因此 Formik 就提供了一系列的 component 組合技給我們使用，從外到內分別為：`<Formik>`、`<Form>`、`<Field>`、`<ErrorMessage>`，我們只需要使用這個組合技，什麼 handle function、什麼 error message、都不再需要再透過 props 傳入。
+
+```jsx=
+
+<Formik
+    initialValues={{ email: '', password: '' }}
+    validate={(values) => {/*...審略...*/}}
+    onSubmit={(values, { setSubmitting }) => {
+      setTimeout(() => {
+        alert(JSON.stringify(values, null, 2))
+      }, 400)
+    }}
+>
+    <Form>
+        <div style={{ margin: '20px' }}>
+            <label>Email：</label>
+            <Field autoComplete='off' type='email' name='email' o />
+            <ErrorMessage name='email'>{(errMsg) => <span style={{ color: 'red' }}>{errMsg}</span>}</ErrorMessage>
+          </div>
+        <div style={{ margin: '20px' }}>
+            <label>Password：</label>
+            <Field autoComplete='off' type='password' name='password' />
+            <ErrorMessage name='password'>{(errMsg) => <span style={{ color: 'red' }}>{errMsg}</span>}</ErrorMessage>
+          </div>
+        <div style={{ margin: '20px' }}>
+            <button type='submit'>Submit</button>
+        </div>
+    </Form>
+</Formik>Ï
+```
+
+能夠這樣實作的關鍵在於最外層的 Formik Component，它內部使用了 React Context API 將 `useFormik` 的 return value 透過 Provider 傳給所有的子組件，因此所有的 child component 只需要透過 context 就可以拿到整個表單的資訊。
+
+```jsx=
+ // Create empty context
+ const FormikContext = React.createContext({});
+ // 簡單實作 Formik Component
+ export const Formik = ({ children, ...props }) => {
+   const formikStateContext = useFormik(props);
+   return (
+     <FormikContext.Provider value={formikStateContext}>
+          {children}
+     </FormikContext.Provider>
+   );
+ };
+/* 簡單實作 Field Component（用 input 來舉例） */ 
+const Field = (props) =>{
+    const formikState = useContext(FormikContext);
+    return(
+        <input {...props} {...formikState.getFieldProps(props)} />
+    )
+}
+```
+
+## 客製化自己的 Input Field
+基本上我們不太會去客製化一個`<Formik>`Component，但我們會去客製化自己的輸入框(替換掉官方的`<Field>`)，因為在實務上會依照設計稿上的 UIKit 來去攥寫各種不同的 input component，例如：label + input + error 的輸入框組合，而這方面 Formik 套件也提供我們使用 `useField` hook 去跟 formik 連結。
+
+```jsx=
+const CustomInputGroup: React.FC<any> = ({ label, ...props }) => {
+  // useField() 的回傳值為 [formik.getFieldProps(), formik.getFieldMeta()]
+  // field 主要為 onChange values 等欄位
+  // meta 主要為 error 、 touch 等欄位
+  const [field, meta] = useField(props)
+  return (
+    <>
+      <label htmlFor={props.id || props.name}>{label}</label>
+      <input className='text-input' {...field} {...props} />
+      {meta.touched && meta.error ? <div className='error'>{meta.error}</div> : null}
+    </>
+  )
+}
+// 使用 CustomInputGroup
+<Formik
+  initialValues={{ email: '', password: '' }}
+  validate={(values) => {/*審略*/}
+  onSubmit={(values) => {/*審略*/}
+>
+  <CustomInputGroup label={'email'} name={'email'} />
+</Formik>
+```
+
+>注意：如果要使用 `useField` 的方式去客製化一個 component 的話，在使用上『必須』搭配使用 `<Formik>`，因為它內部會去呼叫 `useFormikContext` hook 來取得 Formik state 和 helper function 來進行操作。
+
+![](https://i.imgur.com/rP6Y6mi.png)
+
+
+## Reference
+1. [FORMIK - 官方](https://formik.org/docs/tutorial#visited-fields)
