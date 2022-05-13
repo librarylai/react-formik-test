@@ -28,7 +28,6 @@ const FormikGetFieldPropsPage: NextPage = () => {
     },
   })
   const { handleSubmit , errors } = formik
-  console.log('formik.getFieldProps()',formik.getFieldProps('email'))
   return (
     <div className={styles.container}>
       <form onSubmit={handleSubmit}>

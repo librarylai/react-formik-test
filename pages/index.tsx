@@ -35,6 +35,11 @@ const Home: NextPage = () => {
           <h2 style={{color: 'blue'}}>使用 useField 去客製化自己的 input 元件</h2>
         </a>
       </Link>
+      <Link href='/formikUseYup'>
+        <a>
+          <h2 style={{color: 'blue'}}>使用 Yup 做驗證</h2>
+        </a>
+      </Link>
     </div>
   )
 }
