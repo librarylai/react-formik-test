@@ -40,6 +40,11 @@ const Home: NextPage = () => {
           <h2 style={{color: 'blue'}}>使用 Yup 做驗證</h2>
         </a>
       </Link>
+      <Link href='/htmlFormUseYup'>
+        <a>
+          <h2 style={{color: 'blue'}}>使用 Html form 搭配 Yup 做驗證</h2>
+        </a>
+      </Link>
     </div>
   )
 }
