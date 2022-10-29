@@ -1,6 +1,6 @@
 import type { NextPage } from 'next';
 import Link from 'next/link';
-import styles from '../styles/Home.module.css';
+import styles from '@/styles/Home.module.css';
 import { Button, useTheme } from '@mui/material';
 
 const Home: NextPage = () => {
@@ -8,6 +8,7 @@ const Home: NextPage = () => {
   console.log(theme);
   return (
     <div className={styles.container}>
+      <div className={styles.testTsPath}>測試 TS Alias Path</div>
       <Link href="/formikValidation">
         <a>
           <h2 style={{ color: 'blue' }}>測試即時驗證</h2>
